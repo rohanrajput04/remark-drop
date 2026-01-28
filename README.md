@@ -1,5 +1,7 @@
 # Remark Drop
 
+Inspired From Evan King's [ink-drop](https://github.com/evansking/ink-drop)
+
 Save Twitter/X threads to your reMarkable with a single tap from your phone.
 
 ## How It Works
