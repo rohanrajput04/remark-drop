@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Water drop / ink drop icon centered in adaptive icon safe zone -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,24C54,24 36,42.5 36,55C36,64.94 44.06,73 54,73C63.94,73 72,64.94 72,55C72,42.5 54,24 54,24ZM54,67C47.37,67 42,61.63 42,55C42,50.5 47.25,43.63 54,34.63C60.75,43.63 66,50.5 66,55C66,61.63 60.63,67 54,67Z"/>
+    <!-- Kindle/book base -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M42,76h24v4H42z"/>
+</vector>

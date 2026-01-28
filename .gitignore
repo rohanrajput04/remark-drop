@@ -1,0 +1,25 @@
+# Environment and secrets
+.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Claude Code
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# App artifacts
+debug_screenshot.png
+sent_articles.txt
+*.pdf
