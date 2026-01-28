@@ -1,38 +1,38 @@
 # Remark Drop
 
-Push Twitter/X threads to your Kindle or reMarkable with a single tap from your phone.
+Save Twitter/X threads to your reMarkable with a single tap from your phone.
 
 ## How It Works
 
 ```
-┌─────────────┐      POST /send-to-kindle      ┌─────────────┐
-│ Android App │ ─────────────────────────────▶ │  VPS Server │
-└─────────────┘                                 └──────┬──────┘
-                                                       │
-                                                       ▼
-                                                ┌─────────────┐
-                                                │  Playwright │
-                                                │  + Cookies  │
-                                                └──────┬──────┘
-                                                       │
-                                                       ▼
-                                                ┌─────────────┐
-                                                │ Readability │
-                                                │  (Extract)  │
-                                                └──────┬──────┘
-                                                       │
-                                                       ▼
-                                                ┌─────────────┐
-                                                │   Dropbox   │──────▶ E-Reader
-                                                │   or Email  │
-                                                └─────────────┘
+┌─────────────┐        POST /send        ┌─────────────┐
+│ Android App │ ───────────────────────▶ │  VPS Server │
+└─────────────┘                          └──────┬──────┘
+                                                │
+                                                ▼
+                                         ┌─────────────┐
+                                         │  Playwright │
+                                         │  + Cookies  │
+                                         └──────┬──────┘
+                                                │
+                                                ▼
+                                         ┌─────────────┐
+                                         │ Readability │
+                                         │  (Extract)  │
+                                         └──────┬──────┘
+                                                │
+                                                ▼
+                                         ┌─────────────┐
+                                         │   Dropbox   │──▶ reMarkable
+                                         │    (PDF)    │
+                                         └─────────────┘
 ```
 
 1. Share a Twitter/X URL from your Android phone
 2. Android app POSTs it to your server
 3. Playwright fetches the page with your auth cookies
 4. Readability extracts clean article content
-5. PDF is uploaded to Dropbox (or emailed to Kindle)
+5. PDF is uploaded to Dropbox and syncs to reMarkable
 
 ## Setup
 
@@ -56,10 +56,9 @@ Copy `.env.example` to `.env` and fill in your values:
 cp .env.example .env
 ```
 
-See `.env.example` for all configuration options:
-- **Dropbox** (recommended): Simple file upload, works everywhere
-- **Mailgun**: Email API that bypasses cloud SMTP restrictions
-- **SMTP**: Direct email (blocked on most cloud hosts)
+You need:
+- **Twitter cookies**: Get from browser DevTools > Application > Cookies > x.com
+- **Dropbox token**: Create app at https://www.dropbox.com/developers/apps
 
 ### Run
 
@@ -72,10 +71,10 @@ uvicorn main:app --host 0.0.0.0 --port 3000
 
 ## API
 
-### POST /send-to-kindle
+### POST /send
 
 ```bash
-curl -X POST http://localhost:3000/send-to-kindle \
+curl -X POST http://localhost:3000/send \
   -H "Content-Type: application/json" \
   -d '{"url": "https://x.com/user/status/123"}'
 ```
@@ -84,11 +83,11 @@ curl -X POST http://localhost:3000/send-to-kindle \
 {
   "success": true,
   "title": "Article Title",
-  "message": "Article sent to Kindle!"
+  "message": "Article saved to Dropbox!"
 }
 ```
 
-Returns 409 if the article was already sent (dedup).
+Returns 409 if the article was already saved (dedup).
 
 ### GET /
 
@@ -100,5 +99,4 @@ Health check.
 - FastAPI
 - Playwright
 - readability-lxml
-- BeautifulSoup4
 - WeasyPrint (PDF generation)

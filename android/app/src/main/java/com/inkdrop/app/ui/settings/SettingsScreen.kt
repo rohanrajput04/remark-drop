@@ -31,7 +31,7 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Ink Drop") },
+                title = { Text("Remark Drop") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -63,10 +63,10 @@ fun SettingsScreen(
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                     Text(
-                        text = "1. Enter your Ink Drop server URL below\n" +
+                        text = "1. Enter your Remark Drop server URL below\n" +
                                 "2. Test the connection\n" +
                                 "3. Share Twitter/X article links to this app\n" +
-                                "4. Articles will be sent to your Kindle!",
+                                "4. Articles will be saved to Dropbox!",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
@@ -140,7 +140,7 @@ fun SettingsScreen(
 
             // Version info
             Text(
-                text = "Ink Drop v1.0.0",
+                text = "Remark Drop v1.0.0",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.align(Alignment.CenterHorizontally)

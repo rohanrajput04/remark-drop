@@ -43,7 +43,7 @@ class ShareViewModel @Inject constructor(
 
             // Check if server is configured
             if (!settingsRepository.isServerConfigured()) {
-                _result.value = ShareResult.Error("Open Ink Drop to configure server URL")
+                _result.value = ShareResult.Error("Open Remark Drop to configure server URL")
                 notificationHelper.showError("Open app to configure server URL")
                 return@launch
             }
@@ -64,8 +64,8 @@ class ShareViewModel @Inject constructor(
                 val serverUrl = settingsRepository.getServerUrl()
                 val api = createApi(serverUrl)
 
-                // Send to Kindle
-                val response = api.sendToKindle(SendRequest(url))
+                // Send to server
+                val response = api.send(SendRequest(url))
 
                 notificationHelper.dismissProgress()
 
@@ -76,8 +76,8 @@ class ShareViewModel @Inject constructor(
                         notificationHelper.showSuccess(body.title)
                     }
                     response.code() == 409 -> {
-                        _result.value = ShareResult.Error("Article already sent")
-                        notificationHelper.showError("Article already sent to Kindle")
+                        _result.value = ShareResult.Error("Article already saved")
+                        notificationHelper.showError("Article already saved")
                     }
                     response.code() == 401 -> {
                         _result.value = ShareResult.Error("Server authentication expired")

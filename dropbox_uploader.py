@@ -1,5 +1,5 @@
 """
-Dropbox uploader for Kindle and reMarkable.
+Dropbox uploader for reMarkable.
 Uploads articles as PDF files to your Dropbox.
 """
 
@@ -16,7 +16,7 @@ def get_dropbox_config() -> dict:
     """Load Dropbox configuration from environment variables."""
     config = {
         "access_token": os.getenv("DROPBOX_ACCESS_TOKEN"),
-        "upload_path": os.getenv("DROPBOX_UPLOAD_PATH", "/Kindle"),
+        "upload_path": os.getenv("DROPBOX_UPLOAD_PATH", "/reMarkable"),
     }
 
     if not config["access_token"]:
@@ -100,7 +100,7 @@ def upload_to_dropbox(title: str, html_content: str) -> bool:
         HTML(string=styled_html).write_pdf(pdf_buffer)
         pdf_data = pdf_buffer.getvalue()
 
-        print(f"✓ PDF generated ({len(pdf_data)} bytes)")
+        print(f"PDF generated ({len(pdf_data)} bytes)")
 
     except Exception as e:
         print(f"Failed to convert HTML to PDF: {e}")
@@ -129,7 +129,7 @@ def upload_to_dropbox(title: str, html_content: str) -> bool:
 
         if response.status_code == 200:
             result = response.json()
-            print(f"✓ Uploaded to Dropbox: {result['path_display']}")
+            print(f"Uploaded to Dropbox: {result['path_display']}")
             return True
         else:
             # Try to parse error as JSON, fallback to text
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     """
 
     try:
-        upload_to_dropbox("Test Article from Ink Drop", test_html)
+        upload_to_dropbox("Test Article from Remark Drop", test_html)
         print("Upload successful!")
     except ValueError as e:
         print(f"Config error: {e}")

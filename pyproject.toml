@@ -1,7 +1,7 @@
 [project]
 name = "remark-drop"
 version = "0.1.0"
-description = "Push Twitter/X articles to your Kindle or reMarkable"
+description = "Save Twitter/X articles to reMarkable via Dropbox"
 requires-python = ">=3.11"
 dependencies = [
     "playwright>=1.40.0",
@@ -21,4 +21,4 @@ dev = [
 ]
 
 [tool.setuptools]
-py-modules = ["main", "extractor", "emailer", "dropbox_uploader"]
+py-modules = ["main", "extractor", "dropbox_uploader"]

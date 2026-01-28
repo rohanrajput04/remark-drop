@@ -6,7 +6,7 @@ Loads raw HTML from file so we don't need to hit Twitter each time.
 from bs4 import BeautifulSoup
 from readability import Document
 
-from extractor import clean_html_for_kindle
+from extractor import clean_html
 
 
 def load_raw_html() -> str:
@@ -23,14 +23,14 @@ if __name__ == "__main__":
     title = doc.title()
 
     # Clean and format
-    kindle_html = clean_html_for_kindle(readable_html, title)
+    formatted_html = clean_html(readable_html, title)
 
     # Save for inspection
     with open("test_output.html", "w") as f:
-        f.write(kindle_html)
+        f.write(formatted_html)
 
     # Also print plain text preview
-    soup = BeautifulSoup(kindle_html, "html.parser")
+    soup = BeautifulSoup(formatted_html, "html.parser")
     plain_text = soup.get_text(separator="\n\n", strip=True)
 
     print(f"Title: {title}\n")

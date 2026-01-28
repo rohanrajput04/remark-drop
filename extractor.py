@@ -104,9 +104,9 @@ def fetch_page(url: str, save_raw: bool = False) -> tuple[str, str]:
     return html, title
 
 
-def clean_html_for_kindle(html: str, title: str) -> str:
+def clean_html(html: str, title: str) -> str:
     """
-    Clean and format HTML for Kindle readability.
+    Clean and format HTML for e-reader readability.
     Preserves headers, paragraphs, lists, and basic formatting.
     """
     soup = BeautifulSoup(html, "html.parser")
@@ -143,10 +143,10 @@ def clean_html_for_kindle(html: str, title: str) -> str:
         seen_text.add(text)
         content_parts.append(text)
 
-    # Build clean HTML for Kindle
-    kindle_html = _format_for_kindle(content_parts, title)
+    # Build clean HTML
+    formatted_html = _format_html(content_parts, title)
 
-    return kindle_html
+    return formatted_html
 
 
 def _is_ui_text(text: str) -> bool:
@@ -186,8 +186,8 @@ def _clean_title(title: str) -> str:
     return title.strip()
 
 
-def _format_for_kindle(content_parts: list[str], title: str) -> str:
-    """Format content as clean HTML for Kindle."""
+def _format_html(content_parts: list[str], title: str) -> str:
+    """Format content as clean HTML for e-readers."""
     title = _clean_title(title)
 
     paragraphs = "\n".join(f"<p>{part}</p>" for part in content_parts)
@@ -240,7 +240,7 @@ def _remove_twitter_errors(html: str) -> str:
 def extract_article(url: str) -> dict:
     """
     Main extraction function.
-    Returns dict with title, html (for Kindle), and plain text.
+    Returns dict with title, html, and plain text.
     """
     # Fetch page
     raw_html, page_title = fetch_page(url)
@@ -253,16 +253,16 @@ def extract_article(url: str) -> dict:
     readable_html = doc.summary()
     readable_title = doc.title() or page_title
 
-    # Clean and format for Kindle
-    kindle_html = clean_html_for_kindle(readable_html, readable_title)
+    # Clean and format HTML
+    formatted_html = clean_html(readable_html, readable_title)
 
     # Also generate plain text version
-    soup = BeautifulSoup(kindle_html, "html.parser")
+    soup = BeautifulSoup(formatted_html, "html.parser")
     plain_text = soup.get_text(separator="\n\n", strip=True)
 
     return {
         "title": _clean_title(readable_title),
-        "html": kindle_html,
+        "html": formatted_html,
         "text": plain_text,
         "url": url,
     }

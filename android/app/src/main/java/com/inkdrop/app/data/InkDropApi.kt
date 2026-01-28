@@ -29,6 +29,6 @@ interface InkDropApi {
     @GET("/")
     suspend fun healthCheck(): Response<HealthResponse>
 
-    @POST("/send-to-kindle")
-    suspend fun sendToKindle(@Body request: SendRequest): Response<SendResponse>
+    @POST("/send")
+    suspend fun send(@Body request: SendRequest): Response<SendResponse>
 }

@@ -1,5 +1,5 @@
 [Unit]
-Description=Remark Drop - Twitter to Kindle/reMarkable Server
+Description=Remark Drop - Twitter to reMarkable Server
 After=network.target
 
 [Service]

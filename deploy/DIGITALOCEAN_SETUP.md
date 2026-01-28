@@ -2,8 +2,8 @@
 
 ## Prerequisites
 - DigitalOcean account
-- SSH key pair (or create one)
-- Your environment variables ready
+- SSH key pair
+- Dropbox developer account
 
 ## Step 1: Create a Droplet
 
@@ -12,8 +12,8 @@
 3. **Choose Image:** Ubuntu 22.04 LTS x64
 4. **Choose Plan:** Basic ($6/month or higher)
 5. **Choose Region:** Pick closest to your location
-6. **Authentication:** Select your SSH key (or create new)
-7. **Hostname:** `remark-drop` or your preferred name
+6. **Authentication:** Select your SSH key
+7. **Hostname:** `remark-drop`
 8. Click "Create Droplet"
 
 ## Step 2: Connect via SSH
@@ -26,165 +26,71 @@ ssh root@your_droplet_ip
 
 ```bash
 cd /tmp
-curl -O https://raw.githubusercontent.com/YOUR_USERNAME/remark-drop/main/deploy/setup.sh
-chmod +x setup.sh
-sudo ./setup.sh
+curl -O https://raw.githubusercontent.com/YOUR_USERNAME/remark-drop/main/deploy/digitalocean-deploy.sh
+chmod +x digitalocean-deploy.sh
+./digitalocean-deploy.sh
 ```
 
-Or manually:
+## Step 4: Create .env File
 
 ```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install -y python3-pip python3-venv git
-
-# Install Playwright system dependencies
-sudo apt install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libxcomposite1 \
-    libxrandr2 libxdamage1 libpangocairo-1.0-0 libpango-1.0-0 libgbm1 libasound2t64 \
-    libxshmfence1 libglu1-mesa
-
-mkdir -p /opt/remark-drop
-cd /opt/remark-drop
-sudo chown $USER /opt/remark-drop
+nano /opt/remark-drop/.env
 ```
 
-## Step 4: Clone Repository
-
-```bash
-cd /opt/remark-drop
-git clone https://github.com/YOUR_USERNAME/remark-drop.git .
-```
-
-## Step 5: Setup Virtual Environment
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install uv
-uv pip install -e .
-playwright install chromium
-```
-
-## Step 6: Create .env File
-
-```bash
-sudo nano /opt/remark-drop/.env
-```
-
-Add your environment variables:
-```
+Add:
+```env
+# Twitter cookies (from browser DevTools > Application > Cookies > x.com)
 TWITTER_AUTH_TOKEN=your_auth_token
 TWITTER_CT0=your_ct0_token
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
-KINDLE_EMAIL=your_kindle@kindle.com
+
+# Dropbox (see DROPBOX_SETUP.md)
+DROPBOX_ACCESS_TOKEN=your_dropbox_token
+DROPBOX_UPLOAD_PATH=/reMarkable
 ```
 
 Save with `Ctrl+X`, then `Y`, then `Enter`
 
-## Step 7: Setup Systemd Service
+## Step 5: Enable and Start Service
 
 ```bash
-sudo nano /etc/systemd/system/remark-drop.service
+systemctl enable remark-drop
+systemctl start remark-drop
+systemctl status remark-drop
 ```
 
-Paste this:
-```ini
-[Unit]
-Description=Remark Drop - Twitter to Kindle/reMarkable
-After=network.target
-
-[Service]
-Type=notify
-User=root
-WorkingDirectory=/opt/remark-drop
-Environment="PATH=/opt/remark-drop/.venv/bin"
-EnvironmentFile=/opt/remark-drop/.env
-ExecStart=/opt/remark-drop/.venv/bin/uvicorn main:app --host 0.0.0.0 --port 3000
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Save and exit.
-
-## Step 8: Enable and Start Service
+## Step 6: Test
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable remark-drop
-sudo systemctl start remark-drop
+curl http://your_droplet_ip:3000/
+# Should return: {"status":"ok","service":"remark-drop"}
 ```
 
-## Step 9: Check Status
+## Android App Configuration
+
+Set the API endpoint to:
+```
+http://your_droplet_ip:3000/send
+```
+
+## Useful Commands
 
 ```bash
-sudo systemctl status remark-drop
-```
+# View logs
+journalctl -u remark-drop -f
 
-View logs:
-```bash
-sudo journalctl -u remark-drop -f
-```
+# Restart service
+systemctl restart remark-drop
 
-## Step 10: Setup Firewall (Optional but Recommended)
-
-```bash
-sudo ufw allow 22/tcp    # SSH
-sudo ufw allow 80/tcp    # HTTP
-sudo ufw allow 443/tcp   # HTTPS
-sudo ufw enable
-```
-
-## Step 11: Get Your Public IP
-
-```bash
-curl ifconfig.me
-```
-
-Your app is now available at: `http://your_droplet_ip:3000`
-
-## For HTTPS (Optional)
-
-Install Let's Encrypt and Certbot:
-
-```bash
-sudo apt install -y certbot python3-certbot-nginx
-```
-
-Or use Nginx as reverse proxy for better production setup.
-
-## Testing
-
-From your Android device:
-```
-URL: http://your_droplet_ip:3000/send-to-kindle
-Method: POST
-Headers: Content-Type: application/json
-Body: {"url": "https://x.com/user/status/123"}
+# Check if running
+netstat -tlnp | grep 3000
 ```
 
 ## Troubleshooting
 
-**Service won't start:**
 ```bash
-sudo journalctl -u remark-drop -n 50
-```
+# Service won't start
+journalctl -u remark-drop -n 50
 
-**Check if port 3000 is open:**
-```bash
-sudo netstat -tlnp | grep 3000
-```
-
-**Restart service:**
-```bash
-sudo systemctl restart remark-drop
-```
-
-**View real-time logs:**
-```bash
-sudo journalctl -u remark-drop -f
+# Restart service
+systemctl restart remark-drop
 ```

@@ -25,7 +25,7 @@ class NotificationHelper @Inject constructor(
 
     fun showSuccess(title: String) {
         showNotification(
-            title = "Sent to Kindle!",
+            title = "Saved to Dropbox!",
             message = title,
             isError = false
         )
@@ -33,7 +33,7 @@ class NotificationHelper @Inject constructor(
 
     fun showError(message: String) {
         showNotification(
-            title = "Failed to Send",
+            title = "Failed to Save",
             message = message,
             isError = true
         )
@@ -44,7 +44,7 @@ class NotificationHelper @Inject constructor(
 
         val notification = NotificationCompat.Builder(context, InkDropApplication.NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle("Sending to Kindle...")
+            .setContentTitle("Saving to Dropbox...")
             .setContentText(url)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)

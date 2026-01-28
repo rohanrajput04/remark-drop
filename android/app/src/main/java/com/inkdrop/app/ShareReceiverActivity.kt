@@ -30,7 +30,7 @@ class ShareReceiverActivity : ComponentActivity() {
                         // Short toast for immediate feedback
                         Toast.makeText(
                             this@ShareReceiverActivity,
-                            "Sending to Kindle...",
+                            "Saving to Dropbox...",
                             Toast.LENGTH_SHORT
                         ).show()
                         finish()
