@@ -1,6 +1,7 @@
 """
 Dropbox uploader for reMarkable.
 Uploads articles as PDF files to your Dropbox.
+Supports refresh tokens for long-lived access.
 """
 
 import os
@@ -11,16 +12,65 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Cache for refreshed access token
+_cached_access_token = None
+
+
+def refresh_access_token() -> str:
+    """
+    Refresh the Dropbox access token using refresh token.
+    Returns a new access token.
+    """
+    app_key = os.getenv("DROPBOX_APP_KEY")
+    app_secret = os.getenv("DROPBOX_APP_SECRET")
+    refresh_token = os.getenv("DROPBOX_REFRESH_TOKEN")
+
+    if not all([app_key, app_secret, refresh_token]):
+        raise ValueError(
+            "Missing refresh token config. Need: DROPBOX_APP_KEY, DROPBOX_APP_SECRET, DROPBOX_REFRESH_TOKEN"
+        )
+
+    response = requests.post(
+        "https://api.dropboxapi.com/oauth2/token",
+        data={
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+        },
+        auth=(app_key, app_secret),
+        timeout=30,
+    )
+
+    if response.status_code == 200:
+        data = response.json()
+        return data["access_token"]
+    else:
+        raise Exception(f"Failed to refresh token: {response.status_code} - {response.text}")
+
 
 def get_dropbox_config() -> dict:
     """Load Dropbox configuration from environment variables."""
+    global _cached_access_token
+
+    # Try refresh token first (preferred for long-lived access)
+    refresh_token = os.getenv("DROPBOX_REFRESH_TOKEN")
+    if refresh_token and not _cached_access_token:
+        try:
+            _cached_access_token = refresh_access_token()
+            print("✓ Refreshed Dropbox access token")
+        except Exception as e:
+            print(f"Token refresh failed: {e}")
+            # Fall back to static access token
+            _cached_access_token = None
+
+    access_token = _cached_access_token or os.getenv("DROPBOX_ACCESS_TOKEN")
+
     config = {
-        "access_token": os.getenv("DROPBOX_ACCESS_TOKEN"),
+        "access_token": access_token,
         "upload_path": os.getenv("DROPBOX_UPLOAD_PATH", "/reMarkable"),
     }
 
     if not config["access_token"]:
-        raise ValueError("Missing DROPBOX_ACCESS_TOKEN in .env")
+        raise ValueError("Missing DROPBOX_ACCESS_TOKEN or DROPBOX_REFRESH_TOKEN in .env")
 
     return config
 
@@ -129,8 +179,28 @@ def upload_to_dropbox(title: str, html_content: str) -> bool:
 
         if response.status_code == 200:
             result = response.json()
-            print(f"Uploaded to Dropbox: {result['path_display']}")
+            print(f"✓ Uploaded to Dropbox: {result['path_display']}")
             return True
+        elif response.status_code == 401:
+            # Token expired - try to refresh and retry once
+            global _cached_access_token
+            refresh_token = os.getenv("DROPBOX_REFRESH_TOKEN")
+            if refresh_token:
+                print("Access token expired, refreshing...")
+                _cached_access_token = refresh_access_token()
+                headers["Authorization"] = f"Bearer {_cached_access_token}"
+                retry_response = requests.post(url, headers=headers, data=pdf_data, timeout=30)
+                if retry_response.status_code == 200:
+                    result = retry_response.json()
+                    print(f"✓ Uploaded to Dropbox: {result['path_display']}")
+                    return True
+                else:
+                    error_msg = retry_response.text[:200]
+                    print(f"Dropbox API error after refresh {retry_response.status_code}: {error_msg}")
+                    raise Exception(f"Dropbox API error: {retry_response.status_code} - {error_msg}")
+            else:
+                print("Dropbox API error 401: Token expired. Add DROPBOX_REFRESH_TOKEN for auto-refresh.")
+                raise Exception("Dropbox token expired. Configure refresh token for auto-renewal.")
         else:
             # Try to parse error as JSON, fallback to text
             try:
